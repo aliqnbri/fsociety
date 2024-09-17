@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #    ______              _      _           _______
 #   |  ____|            (_)    | |         |__   __|
 #   | |__ ___  ___   ___ _  ___| |_ _   _     | | ___  __ _ _ __ ___
@@ -20,34 +20,35 @@ Imports
 import sys
 import argparse
 import os
-import httplib
 import subprocess
 import re
-import urllib2
+import requests
 import socket
 import urllib
-import sys
 import json
 import telnetlib
 import glob
 import random
-import Queue
+import queue  # For Queue
 import threading
 import base64
 import time
-import ConfigParser
+import configparser  # Updated ConfigParser for Python 3
 from sys import argv
 from commands import *
 from getpass import getpass
 from xml.dom import minidom
-from urlparse import urlparse
+from urllib.parse import urlparse  # Updated urlparse for Python 3
 from optparse import OptionParser
 from time import gmtime, strftime, sleep
+from colorama import init, Fore, Style
+
+# Initialize colorama for cross-platform support
+init(autoreset=True)
 
 '''
 Common Functions
 '''
-
 
 class color:
     HEADER = '\033[95m'
@@ -61,83 +62,58 @@ class color:
     UNDERLINE = '\033[4m'
     LOGGING = '\33[34m'
 
-
-def clearScr():
-    os.system('clear')
-
-
-def yesOrNo():
-    return (raw_input("Continue Y / N: ") in yes)
-
-
 '''
 Config
 '''
-installDir = os.path.dirname(os.path.abspath(__file__)) + '/'
-configFile = installDir + "/fsociety.cfg"
-print(installDir)
-config = ConfigParser.RawConfigParser()
-config.read(configFile)
+import os
+import sys
+import configparser
+from colorama import Fore, Style
 
-toolDir = installDir + config.get('fsociety', 'toolDir')
-logDir = installDir + config.get('fsociety', 'logDir')
-yes = config.get('fsociety', 'yes').split()
-color_random=[color.HEADER,color.IMPORTANT,color.NOTICE,color.OKBLUE,color.OKGREEN,color.WARNING,color.RED,color.END,color.UNDERLINE,color.LOGGING]
-random.shuffle(color_random)
-fsocietylogo = color_random[0] + '''
+def clear_screen():
+    os.system('clear' if os.name == 'posix' else 'cls')
+
+def display_logo():
+    logo = Fore.CYAN + """
         d88888b .d8888.  .d88b.   .o88b. d888888b d88888b d888888b db    db
         88'     88'  YP .8P  Y8. d8P  Y8   `88'   88         88    `8b  d8'
         88ooo   `8bo.   88    88 8P         88    88ooooo    88     `8bd8'
         88        `Y8b. 88    88 8b         88    88         88       88
         88      db   8D `8b  d8' Y8b  d8   .88.   88.        88       88
         YP      `8888Y'  `Y88P'   `Y88P' Y888888P Y88888P    YP       YP
-        '''
-fsocietyPrompt = "fsociety ~# "
-alreadyInstalled = "Already Installed"
-continuePrompt = "\nClick [Return] to continue"
+    """ + Style.RESET_ALL
+    print(logo)
 
-termsAndConditions = color.NOTICE + '''
-I shall not use fsociety to:
-(i) upload or otherwise transmit, display or distribute any
-content that infringes any trademark, trade secret, copyright
-or other proprietary or intellectual property rights of any
-person; (ii) upload or otherwise transmit any material that contains
-software viruses or any other computer code, files or programs
-designed to interrupt, destroy or limit the functionality of any
-computer software or hardware or telecommunications equipment;
-''' + color.END
+def display_terms_and_conditions():
+    terms = Fore.YELLOW + '''
+    I shall not use fsociety to:
+    (i) upload or otherwise transmit, display or distribute any
+    content that infringes any trademark, trade secret, copyright
+    or other proprietary or intellectual property rights of any
+    person; (ii) upload or otherwise transmit any material that contains
+    software viruses or any other computer code, files or programs
+    designed to interrupt, destroy or limit the functionality of any
+    computer software or hardware or telecommunications equipment.
+    ''' + Style.RESET_ALL
+    print(terms)
 
-mrrobot4 = color.NOTICE + '''
-Hello,
+def load_config(config_file):
+    """Loads the configuration file."""
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
 
-As we all know, Mr. Robot 4.0 is comming out - the end of Mr. Robot.
+def yes_or_no():
+    """Prompts user for a yes or no response."""
+    while True:
+        choice = input("Do you agree to our terms and conditions (Y/n): ").lower()
+        if choice in ['y', 'yes']:
+            return True
+        elif choice in ['n', 'no']:
+            return False
+        else:
+            print(Fore.RED + "Invalid input. Please enter 'Y' or 'N'." + Style.RESET_ALL)
 
-We will update to python3.7 & add all of the new hacking tool of 4.0 later this year
-There will be no more updates after the show is done.
-This is to keep cannon to the show.))
-
-Thank you for all the sourport over the years, the fsociety team thanks you!
-Feel free to join the NEW DISCORD!!!
-Anything Mr. Robot will be on the server!
-
-[ https://discord.gg/xB87X9z ]
-
-
-
-Thanks for reading,
-Zachary, CRO-THEHACKER - Dev'''
-
-'''
-Starts Menu Classes
-'''
-def agreement():
-    while not config.getboolean("fsociety", "agreement"):
-        clearScr()
-        print(termsAndConditions)
-        print(mrrobot4)
-        agree = raw_input("You must agree to our terms and conditions first (Y/n) ").lower()
-        if agree in yes:
-            config.set('fsociety', 'agreement', 'true')
 
 class fsociety:
     def __init__(self):
@@ -2091,9 +2067,43 @@ def wpminiscanner():
 ############################
 
 
+def main():
+    """Main function to execute the program."""
+    clear_screen()
+    display_logo()
+    
+    # Load the configuration
+    install_dir = os.path.dirname(os.path.abspath(__file__))
+    config_file = os.path.join(install_dir, "fsociety.cfg")
+    config = load_config(config_file)
+
+    tool_dir = os.path.join(install_dir, config.get('fsociety', 'toolDir'))
+    log_dir = os.path.join(install_dir, config.get('fsociety', 'logDir'))
+    yes_options = config.get('fsociety', 'yes').split()
+
+    # Check if the user has already agreed
+    if not config.getboolean("fsociety", "agreement"):
+        display_terms_and_conditions()
+        
+        if yes_or_no():
+            print(Fore.CYAN + "User agreed to continue." + Style.RESET_ALL)
+            config.set('fsociety', 'agreement', 'true')
+            # Save the updated config
+            with open(config_file, 'w') as configfile:
+                config.write(configfile)
+        else:
+            print(Fore.RED + "User declined. Exiting." + Style.RESET_ALL)
+            sys.exit(0)
+    else:
+        print(Fore.CYAN + "User has already agreed to the terms." + Style.RESET_ALL)
+
+    # Continue with the main program logic here
+    print(Fore.GREEN + "Proceeding with the rest of the program..." + Style.RESET_ALL)
+
 if __name__ == "__main__":
+ 
     try:
-        agreement()
+        main()
         fsociety()
     except KeyboardInterrupt:
         print(" Finishing up...\n")
