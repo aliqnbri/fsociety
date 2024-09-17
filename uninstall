@@ -14,84 +14,60 @@
 #
 # -------------------------
 
+# Function to log messages
+log() {
+    echo -e "\e[32m[✔] $1\e[0m"
+}
+
+# Function to log errors
+error_log() {
+    echo -e "\e[31m[✘] $1\e[0m"
+}
+
+
+
 clear
-
 echo "
-
+██╗   ██╗ ██████╗ ██╗   ██╗████████╗███████╗
+██║   ██║██╔═══██╗██║   ██║╚══██╔══╝██╔════╝
+██║   ██║██║   ██║██║   ██║   ██║   █████╗  
+██║   ██║██║   ██║██║   ██║   ██║   ██╔══╝  
+╚██████╔╝╚██████╔╝╚██████╔╝   ██║   ███████╗
+ ╚═════╝  ╚═════╝  ╚═════╝    ╚═╝   ╚══════╝
+                                            
 ";
 
-if [ "$PREFIX" = "/data/data/com.termux/files/usr" ]; then
-
-    INSTALL_DIR="$PREFIX/usr/share/doc/fsociety"
-
-    BIN_DIR="$PREFIX/bin/"
-
-    BASH_PATH="$PREFIX/bin/bash"
-
-    TERMUX=true
-
-elif [ "$(uname)" = "Darwin" ]; then
-
-    INSTALL_DIR="/usr/local/fsociety"
-
-    BIN_DIR="/usr/local/bin/"
-
-    BASH_PATH="/bin/bash"
-
-    TERMUX=false
-
-else
-
-    INSTALL_DIR="$HOME/.fsociety"
-
-    BIN_DIR="/usr/local/bin/"
-
-    BASH_PATH="/bin/bash"
-
-    TERMUX=false
-
-fi
-
-echo "[✔] Checking directories...";
-
+# Uninstall fsociety if found
 if [ -d "$INSTALL_DIR" ]; then
-
-        rm -rf "$INSTALL_DIR"
-
-        rm "$BIN_DIR/fsociety*"
-
-        sudo rm -rf "$INSTALL_DIR"
-
-        sudo rm "$BIN_DIR/fsociety*"
-
-    else
-
-        echo "[✘] If you want to uninstall you must remove previous installations [✘] ";
-
-        echo "[✘] Failed! [✘] ";
-
-fi
-
-echo "[✔] Cleaning up old directories...";
-
-if [ -d "$ETC_DIR/Manisso" ]; then
-
-    echo "$DIR_FOUND_TEXT"
+    log "Fsociety directory found. Removing installation..."
 
     if [ "$TERMUX" = true ]; then
-
-        rm -rf "$ETC_DIR/Manisso"
-
+        rm -rf "$INSTALL_DIR" && log "Removed $INSTALL_DIR"
+        rm "$BIN_DIR/fsociety*" && log "Removed binaries from $BIN_DIR"
     else
-
-        sudo rm -rf "$ETC_DIR/Manisso"
-
+        sudo rm -rf "$INSTALL_DIR" && log "Removed $INSTALL_DIR"
+        sudo rm "$BIN_DIR/fsociety*" && log "Removed binaries from $BIN_DIR"
     fi
 
+    log "Fsociety uninstalled successfully!"
+else
+    error_log "Fsociety installation not found! Nothing to uninstall."
+    exit 1
+fi
+
+log "Cleaning up old directories..."
+
+# Clean up any remaining old directories
+if [ -d "$ETC_DIR/Manisso" ]; then
+    if [ "$TERMUX" = true ]; then
+        rm -rf "$ETC_DIR/Manisso" && log "Cleaned up $ETC_DIR/Manisso"
+    else
+        sudo rm -rf "$ETC_DIR/Manisso" && log "Cleaned up $ETC_DIR/Manisso"
+    fi
+else
+    log "No old directories found to clean."
 fi
 
 clear
-
-clear
-
-echo "[✔] all good!"
+log "Uninstallation complete! All files removed."
+exit 0
