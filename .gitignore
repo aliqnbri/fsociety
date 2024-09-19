@@ -2,4 +2,5 @@ install
 logs/
 tools/
 .DS_Store
-*/.venv
+*/*.venv
+fsociety/.venv
