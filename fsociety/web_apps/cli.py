@@ -3,8 +3,9 @@ from fsociety.core.menu import tools_cli
 
 from .photon import photon
 from .xsstrike import xsstrike
+from .nuclei import nuclei
 
-__tools__ = [xsstrike, photon]
+__tools__ = [xsstrike, photon, nuclei]
 
 
 def cli():
