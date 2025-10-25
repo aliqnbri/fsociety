@@ -20,7 +20,7 @@ class S3scannerRepo(GitHubRepo):
         txt_path = os.path.join(INSTALL_DIR, "s3_domains.txt")
         with open(txt_path, "w", encoding="utf-8") as domains_file:
             for domain in user_domains.split():
-                domains_file.write(domain)
+                domains_file.write(f"{domain}\n")
         return os.system(f"python3 s3scanner.py {txt_path}")
 
 
